@@ -1196,3 +1196,54 @@ async function initApp() {
 }
 
 initApp();
+
+/* ===========================================================
+   BACKGROUND MUSIC SYSTEM
+   Replace BG_MUSIC_URL below with your own music file link!
+   =========================================================== */
+const BG_MUSIC_URL = "https://assets.mixkit.co/music/preview/mixkit-dreaming-big-31.mp3";
+
+const bgMusic = new Audio(BG_MUSIC_URL);
+bgMusic.loop = true;
+bgMusic.volume = 0.35;
+
+let bgMusicEnabled = localStorage.getItem("cc_music") === "true";
+
+function updateMusicButton() {
+  const icon  = $("#music-icon");
+  const state = $("#music-state");
+  if (!icon || !state) return;
+  if (bgMusicEnabled) {
+    icon.textContent  = "♫";
+    state.textContent = "currently: ON";
+  } else {
+    icon.textContent  = "♪";
+    state.textContent = "currently: OFF";
+  }
+}
+
+function toggleBgMusic() {
+  bgMusicEnabled = !bgMusicEnabled;
+  localStorage.setItem("cc_music", bgMusicEnabled);
+  if (bgMusicEnabled) {
+    bgMusic.play().catch(() => {});
+  } else {
+    bgMusic.pause();
+  }
+  updateMusicButton();
+}
+
+// Wire up the toggle button on the home screen
+document.addEventListener("click", (e) => {
+  if (e.target.closest("#music-toggle")) toggleBgMusic();
+});
+
+// Resume music if it was ON last session (needs a user gesture first)
+document.addEventListener("click", () => {
+  if (bgMusicEnabled && bgMusic.paused) {
+    bgMusic.play().catch(() => {});
+  }
+}, { once: false });
+
+// Set initial button state
+updateMusicButton();

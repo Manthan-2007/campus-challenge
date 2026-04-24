@@ -349,35 +349,7 @@
     </div>
 
    </main>
-   <!-- Firebase-powered app -->
-   <div id="music-modal" style="display:none;">
-     <div class="modal-box music-modal-box">
-       <h2>🎵 My Music</h2>
-       <div class="music-upload-area">
-         <input type="file" id="music-file-input" accept="audio/*" style="display:none" />
-         <button class="doodle-btn primary" id="upload-music-btn">+ upload music</button>
-       </div>
-       <div id="music-list" class="music-list">
-         <!-- Music tracks injected here -->
-         <p class="music-empty" id="music-empty">no music yet — upload your fav tracks! 🎶</p>
-       </div>
-       <div class="music-player" id="music-player" style="display:none;">
-         <div class="music-player-controls">
-           <button class="doodle-btn" id="music-prev">⏮</button>
-           <button class="doodle-btn primary" id="music-play-pause">▶</button>
-           <button class="doodle-btn" id="music-next">⏭</button>
-         </div>
-         <div class="music-player-info">
-           <p class="music-track-name" id="current-track-name">—</p>
-           <p class="music-track-time" id="track-time">0:00 / 0:00</p>
-         </div>
-         <input type="range" id="music-seek" min="0" max="100" value="0" class="music-seek-slider" />
-       </div>
-       <div class="auth-actions" style="margin-top:12px;">
-         <button class="doodle-btn" id="close-music-btn">close</button>
-       </div>
-     </div>
-   </div>
+   <!-- Music modal removed: background music is now controlled by the ♪ button -->
    <div id="edit-profile-modal" style="display:none;">
     <div class="modal-box">
       <h2>Edit Profile</h2>

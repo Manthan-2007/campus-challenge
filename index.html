@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Campus Challenge ✸ Doodle Edition</title>
+  <link rel="stylesheet" href="style.css?v=2" />
+</head>
+
+<body data-theme="cream">
+
+  <!-- ===== POPUP STACK (comic bubbles) ===== -->
+  <div id="popup-stack" class="popup-stack" aria-live="polite"></div>
+
+  <!-- ===== APP SHELL ===== -->
+  <main id="app">
+
+    <!-- ============ START SCREEN ============ -->
+    <section class="screen active" id="screen-start">
+      <header class="title-block">
+        <h1 class="big-title">Campus<span class="title-star">★</span>Challenge</h1>
+        <p class="tagline">~ a slightly weird, very fun campus game ~</p>
+      </header>
+
+      <div class="start-grid">
+        <button class="tile tile-pink" data-nav="task">
+          <span class="tile-emoji">▶</span>
+          <span class="tile-label">Start</span>
+          <span class="tile-sub">match me up!</span>
+        </button>
+
+        <button class="tile tile-yellow" data-nav="profile">
+          <span class="tile-emoji">☻</span>
+          <span class="tile-label">Profile</span>
+          <span class="tile-sub">your scrapbook</span>
+        </button>
+
+        <button class="tile tile-mint" data-nav="settings">
+          <span class="tile-emoji">✦</span>
+          <span class="tile-label">Settings</span>
+          <span class="tile-sub">themes & vibes</span>
+        </button>
+
+        <button class="tile tile-blue" id="music-toggle">
+          <span class="tile-emoji" id="music-icon">♪</span>
+          <span class="tile-label">Music </span>
+          <span class="tile-sub" id="music-state">currently: OFF</span>
+        </button>
+
+        <button class="tile tile-peach" data-nav="feed">
+          <span class="tile-emoji">📋</span>
+          <span class="tile-label">Feed</span>
+          <span class="tile-sub">campus posts</span>
+        </button>
+
+        <button class="tile tile-lavender" data-nav="leaderboard">
+          <span class="tile-emoji">🏆</span>
+          <span class="tile-label">Leaderboard</span>
+          <span class="tile-sub">top doodlers</span>
+        </button>
+      </div>
+
+      <!-- Current match summary (shows task/progress) -->
+      <div class="settings-wrap" style="max-width:820px; margin:22px auto 0;">
+        <div class="setting-block" id="current-match-block" style="display:none;">
+          <h3 class="setting-h">📡 current match</h3>
+          <p style="margin:0 0 10px; color:var(--ink-soft); font-size:14px;">
+            status: <b id="current-match-status">—</b>
+          </p>
+          <p style="margin:0 0 10px; font-size:15px;">
+            task: <span id="current-match-task">—</span>
+          </p>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="doodle-btn primary" id="current-match-open">open match</button>
+            <button class="doodle-btn" id="current-match-clear">clear</button>
+          </div>
+        </div>
+      </div>
+
+      <footer class="foot-note">
+        <span class="doodle-arrow">↳</span> tip: tap a card to begin
+      </footer>
+    </section>
+
+    <!-- ============ PROFILE SCREEN ============ -->
+    <section class="screen" id="screen-profile">
+      <nav class="topbar">
+        <button class="back-btn" data-nav="start">← back</button>
+        <h2 class="screen-title">My Scrapbook</h2>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <button class="doodle-btn" id="edit-profile-btn">✎ edit</button>
+          <span class="score-chip">score: <b id="profile-score">0</b></span>
+        </div>
+      </nav>
+
+      <div class="scrapbook">
+        <!-- Fixed cards -->
+        <article class="card card-tilt-l">
+          <span class="card-pin"></span>
+          <h3 class="card-label">name</h3>
+          <p class="card-value" id="p-name">Rhea Menon</p>
+        </article>
+
+        <article class="card card-tilt-r">
+          <span class="card-pin"></span>
+          <h3 class="card-label">course</h3>
+          <p class="card-value" id="p-course">B.Tech</p>
+        </article>
+
+        <article class="card card-tilt-l">
+          <span class="card-pin"></span>
+          <h3 class="card-label">department</h3>
+          <p class="card-value" id="p-dept">Computer Science</p>
+        </article>
+
+        <article class="card card-tilt-r">
+          <span class="card-pin"></span>
+          <h3 class="card-label">section / year</h3>
+          <p class="card-value" id="p-section">3rd Year • Sec B</p>
+        </article>
+
+        <article class="card card-tilt-l card-score">
+          <span class="card-pin"></span>
+          <h3 class="card-label">total score</h3>
+          <p class="card-value big-num" id="p-score">0</p>
+        </article>
+
+        <!-- Custom cards inject here -->
+        <div id="custom-cards" class="custom-wrap"></div>
+
+        <!-- Add new card -->
+        <article class="card card-add">
+          <h3 class="card-label">add a card</h3>
+          <input type="text" id="new-label" placeholder="label (e.g. hobby)" />
+          <input type="text" id="new-value" placeholder="value (e.g. singing)" />
+          <button class="doodle-btn" id="add-card-btn">+ stick it on</button>
+        </article>
+      </div>
+
+      <!-- ===== COMPLETED TASKS SECTION ===== -->
+      <div class="completed-tasks-section">
+        <h3 class="completed-tasks-heading">✎ Completed Tasks</h3>
+        <div id="completed-tasks-list" class="scrapbook">
+          <p class="completed-tasks-empty" id="completed-tasks-empty">no posted tasks yet — go complete some! ✦</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TASK SCREEN ============ -->
+    <section class="screen" id="screen-task">
+      <nav class="topbar">
+        <button class="back-btn" data-nav="start">← back</button>
+        <h2 class="screen-title">Live Match</h2>
+        <span class="score-chip">score: <b id="task-score">0</b></span>
+      </nav>
+
+      <div class="task-stage">
+
+        <!-- TV -->
+        <div class="tv">
+          <div class="tv-screen">
+            <div class="tv-static"></div>
+            <div class="tv-content">
+              <p class="tv-role">Role: <span id="role-tag">—</span></p>
+              <p class="tv-status" id="status-tag">waiting…</p>
+               <div class="tv-task-box">
+                 <p class="tv-task" id="task-text">No task yet. Hang tight!</p>
+               </div>
+               <!-- Proof preview for giver -->
+               <div class="tv-proof-area" id="tv-proof-area" style="display:none; margin-top:12px;">
+                 <h4 style="margin:0 0 8px; color:#ffd166;">Proof received:</h4>
+                 <div id="tv-proof-content"></div>
+               </div>
+             </div>
+          </div>
+          <div class="tv-knobs">
+            <span class="knob"></span>
+            <span class="knob"></span>
+            <span class="tv-brand">DOODLE-VISION 90</span>
+          </div>
+          <div class="tv-legs">
+            <span></span><span></span>
+          </div>
+        </div>
+
+        <!-- Side panels -->
+        <div class="side-panels">
+
+          <!-- Timer -->
+          <div class="panel panel-timer">
+            <h4 class="panel-title">⏱ timer</h4>
+            <p class="timer-display" id="timer-display">--:--</p>
+            <p class="timer-mode" id="timer-mode">idle</p>
+          </div>
+
+          <!-- Sticky note -->
+          <div class="panel panel-note">
+            <h4 class="panel-title">✎ side note</h4>
+            <textarea id="note-input" placeholder="leave a tiny comic note..."></textarea>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- CD Upload -->
+      <div class="cd-area">
+        <div class="cd-disc" id="cd-disc">
+          <div class="cd-hole"></div>
+          <p class="cd-label" id="cd-label">slot empty</p>
+        </div>
+        <div class="cd-buttons">
+          <button class="chip-btn" data-attach="image">📷 image</button>
+          <button class="chip-btn" data-attach="audio">🎙 audio</button>
+          <button class="chip-btn" data-attach="video">🎬 video</button>
+          <button class="chip-btn" data-attach="text">📝 text</button>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="action-bar" id="action-bar">
+        <!-- Buttons injected based on role -->
+      </div>
+
+      <!-- Task input (only for giver) -->
+      <div class="task-input-row" id="task-input-row" hidden>
+        <input type="text" id="task-input" placeholder="write a fun task within 3 minutes…" />
+      </div>
+
+      <!-- Hidden file input for media uploads -->
+      <input type="file" id="media-file-input" style="display:none" accept="image/*,video/*,audio/*" />
+    </section>
+
+    <!-- ============ SETTINGS SCREEN ============ -->
+    <section class="screen" id="screen-settings">
+      <nav class="topbar">
+        <button class="back-btn" data-nav="start">← back</button>
+        <h2 class="screen-title">Settings & Vibes</h2>
+        <span class="score-chip">score: <b id="settings-score">0</b></span>
+      </nav>
+
+      <div class="settings-wrap">
+
+        <div class="setting-block">
+          <h3 class="setting-h">🎨 theme</h3>
+          <div class="theme-row">
+            <button class="theme-swatch" data-theme="cream" style="--sw:#fef6e4">cream</button>
+            <button class="theme-swatch" data-theme="mint" style="--sw:#d4f1d4">mint</button>
+            <button class="theme-swatch" data-theme="peach" style="--sw:#ffd9b3">peach</button>
+            <button class="theme-swatch" data-theme="sky" style="--sw:#cfe7ff">sky</button>
+            <button class="theme-swatch" data-theme="dark" style="--sw:#2a2a35; color:#fff">dark</button>
+          </div>
+        </div>
+
+        <div class="setting-block">
+          <h3 class="setting-h">🌗 mood</h3>
+          <div class="mood-row">
+            <label class="switch">
+              <input type="radio" name="mood" value="light" checked /> light
+            </label>
+            <label class="switch">
+              <input type="radio" name="mood" value="dark" /> dark
+            </label>
+            <label class="switch">
+              <input type="radio" name="mood" value="cozy" /> cozy
+            </label>
+          </div>
+        </div>
+
+        <div class="setting-block">
+          <h3 class="setting-h">🔊 playful sound</h3>
+          <label class="big-switch">
+            <input type="checkbox" id="sound-toggle" />
+            <span class="big-switch-track"></span>
+            <span id="sound-label">OFF</span>
+          </label>
+        </div>
+
+        <div class="setting-block">
+          <h3 class="setting-h">🧪 demo helpers</h3>
+          <button class="doodle-btn" id="demo-popup">spawn popup</button>
+          <button class="doodle-btn" id="demo-result">jump to result</button>
+        </div>
+
+        <div class="setting-block">
+          <h3 class="setting-h">🔐 account</h3>
+          <p style="margin:0 0 10px; color:var(--ink-soft); font-size:14px;">
+            logged in as: <b id="settings-email">—</b>
+          </p>
+          <button class="doodle-btn" id="logout-btn">logout</button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ RESULT SCREEN ============ -->
+    <section class="screen" id="screen-result">
+      <div class="result-wrap">
+        <div class="result-card">
+          <h2 id="result-outcome">Approved!</h2>
+          <p class="result-points" id="result-points">+10</p>
+          <p class="result-line">your new total:</p>
+          <p class="result-total" id="result-total">0</p>
+
+          <div class="result-actions">
+            <button class="doodle-btn primary" data-nav="start">return to start</button>
+            <button class="doodle-btn" data-nav="task">play again</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FEED SCREEN ============ -->
+    <section class="screen" id="screen-feed">
+      <nav class="topbar">
+        <button class="back-btn" data-nav="start">← back</button>
+        <h2 class="screen-title">Campus Feed</h2>
+        <span class="score-chip">score: <b id="feed-score">0</b></span>
+      </nav>
+
+      <div id="feed-list" class="feed-list">
+        <!-- Feed posts injected here -->
+      </div>
+    </section>
+
+    <!-- ============ LEADERBOARD SCREEN ============ -->
+    <section class="screen" id="screen-leaderboard">
+      <nav class="topbar">
+        <button class="back-btn" data-nav="start">← back</button>
+        <h2 class="screen-title">Leaderboard</h2>
+        <span class="score-chip">score: <b id="leaderboard-score">0</b></span>
+      </nav>
+
+      <div id="leaderboard-list" class="leaderboard-list">
+        <!-- Leaderboard rows injected here -->
+      </div>
+    </section>
+    <div id="login-modal">
+      <div class="modal-box">
+        <h2>Login / Signup</h2>
+        <input id="email" type="email" placeholder="Email" />
+        <input id="password" type="password" placeholder="Password" />
+        <div class="auth-actions">
+          <button onclick="signUp()">Sign Up</button>
+          <button onclick="login()">Login</button>
+        </div>
+      </div>
+    </div>
+
+   </main>
+   <!-- Firebase-powered app -->
+   <div id="music-modal" style="display:none;">
+     <div class="modal-box music-modal-box">
+       <h2>🎵 My Music</h2>
+       <div class="music-upload-area">
+         <input type="file" id="music-file-input" accept="audio/*" style="display:none" />
+         <button class="doodle-btn primary" id="upload-music-btn">+ upload music</button>
+       </div>
+       <div id="music-list" class="music-list">
+         <!-- Music tracks injected here -->
+         <p class="music-empty" id="music-empty">no music yet — upload your fav tracks! 🎶</p>
+       </div>
+       <div class="music-player" id="music-player" style="display:none;">
+         <div class="music-player-controls">
+           <button class="doodle-btn" id="music-prev">⏮</button>
+           <button class="doodle-btn primary" id="music-play-pause">▶</button>
+           <button class="doodle-btn" id="music-next">⏭</button>
+         </div>
+         <div class="music-player-info">
+           <p class="music-track-name" id="current-track-name">—</p>
+           <p class="music-track-time" id="track-time">0:00 / 0:00</p>
+         </div>
+         <input type="range" id="music-seek" min="0" max="100" value="0" class="music-seek-slider" />
+       </div>
+       <div class="auth-actions" style="margin-top:12px;">
+         <button class="doodle-btn" id="close-music-btn">close</button>
+       </div>
+     </div>
+   </div>
+   <div id="edit-profile-modal" style="display:none;">
+    <div class="modal-box">
+      <h2>Edit Profile</h2>
+
+      <input id="edit-name" type="text" placeholder="Name" />
+      <input id="edit-course" type="text" placeholder="Course" />
+      <input id="edit-department" type="text" placeholder="Department" />
+      <input id="edit-section" type="text" placeholder="Section / Year" />
+
+      <div class="auth-actions">
+        <button id="save-profile-btn">Save</button>
+        <button id="cancel-profile-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <script src="script.js?v=6"></script>
+</body>
+
+</html>

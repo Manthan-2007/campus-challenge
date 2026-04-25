@@ -1003,7 +1003,7 @@ async function handleMatchUpdate(m) {
     // Show and render proof content
     const proofArea = $("#tv-proof-area");
     const proofContent = $("#tv-proof-content");
-    if (proofArea && proofContent) {
+    if (proofArea && proofContent && proofContent.innerHTML === "") {
       proofArea.style.display = "block";
       proofContent.innerHTML = ""; // clear previous
 
@@ -1194,6 +1194,10 @@ function resetTaskUI() {
   $("#action-bar").innerHTML = "";
   $("#task-input-row").hidden = true;
   setTimerDisplay("--:--", "idle");
+  const proofArea = $("#tv-proof-area");
+  const proofContent = $("#tv-proof-content");
+  if (proofArea) proofArea.style.display = "none";
+  if (proofContent) proofContent.innerHTML = "";
 }
 
 async function startMatch() {

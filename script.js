@@ -45,7 +45,8 @@ const DB = {
     const fd = new FormData();
     fd.append("file", file);
     const r = await fetch(`${API_BASE}/upload`, { method: "POST", body: fd });
-    const { url } = await r.json();
+    const { filename } = await r.json();
+    const url = `${API_BASE.replace('/api', '')}/uploads/${filename}`;
     return { id: url, downloadURL: url };
   },
   submitProof: async (matchId, uid, type, text) => {
@@ -85,7 +86,8 @@ const DB = {
     const fd = new FormData();
     fd.append("file", file);
     const r = await fetch(`${API_BASE}/upload`, { method: "POST", body: fd });
-    const { url, filename } = await r.json();
+    const { filename } = await r.json();
+    const url = `${API_BASE.replace('/api', '')}/uploads/${filename}`;
     await fetch(`${API_BASE}/music`, {
       method: "POST", headers: {"Content-Type":"application/json"},
       body: JSON.stringify({userId: uid, fileName: filename, downloadURL: url})

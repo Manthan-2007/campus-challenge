@@ -1061,3 +1061,334 @@ button, input, textarea{
   font-size: 15px;
   margin-bottom: 12px;
 }
+
+/* ============ LOBBY SCREEN ============ */
+.lobby-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  gap: 22px;
+  text-align: center;
+  padding: 20px;
+}
+
+.lobby-spinner-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.lobby-spinner {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ls-ring {
+  position: absolute;
+  inset: 0;
+  border: 4px solid transparent;
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: lsSpin 1.2s linear infinite;
+}
+
+.ls-ring-2 {
+  inset: 14px;
+  border-top-color: var(--yellow);
+  animation-duration: 0.8s;
+  animation-direction: reverse;
+}
+
+@keyframes lsSpin { to { transform: rotate(360deg); } }
+
+.ls-center {
+  font-size: 36px;
+  animation: lsBounce 1.4s ease-in-out infinite;
+  z-index: 1;
+}
+
+@keyframes lsBounce {
+  0%,100% { transform: scale(1); }
+  50%      { transform: scale(1.18); }
+}
+
+.lobby-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.lobby-dots span {
+  width: 10px;
+  height: 10px;
+  background: var(--accent);
+  border: 2px solid var(--line);
+  border-radius: 50%;
+  animation: ldPulse 1.2s ease-in-out infinite;
+}
+.lobby-dots span:nth-child(2) { animation-delay: 0.2s; background: var(--yellow); }
+.lobby-dots span:nth-child(3) { animation-delay: 0.4s; background: var(--mint); }
+
+@keyframes ldPulse {
+  0%,100% { transform: translateY(0); opacity: 1; }
+  50%      { transform: translateY(-6px); opacity: 0.6; }
+}
+
+.lobby-heading {
+  margin: 0;
+  font-size: 30px;
+  letter-spacing: .5px;
+}
+
+.lobby-sub {
+  margin: 0;
+  font-size: 16px;
+  color: var(--ink-soft);
+}
+
+.lobby-status-card {
+  background: var(--paper);
+  border: 2px solid var(--line);
+  border-radius: 18px;
+  padding: 18px 24px;
+  box-shadow: var(--shadow-sm);
+  min-width: 280px;
+  max-width: 420px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.lobby-status-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  color: var(--ink-soft);
+}
+
+.lobby-status-dot {
+  width: 10px;
+  height: 10px;
+  background: var(--accent);
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  animation: ldPulse 1s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.lobby-player-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg);
+  border: 2px dashed var(--line);
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-size: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.lobby-avatar {
+  font-size: 22px;
+}
+
+.lobby-avatar-grey {
+  opacity: 0.4;
+}
+
+.lobby-vs-sep {
+  font-size: 13px;
+  color: var(--ink-soft);
+  background: var(--yellow);
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.lobby-cancel-big {
+  font-size: 15px;
+  padding: 10px 22px;
+  border-radius: 999px;
+  background: var(--peach);
+}
+
+/* ============ OPPONENT REVEAL OVERLAY ============ */
+#opponent-reveal {
+  position: fixed;
+  inset: 0;
+  z-index: 11000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.or-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(4px);
+}
+
+.or-card {
+  position: relative;
+  z-index: 1;
+  background: var(--paper);
+  border: 3px solid var(--line);
+  border-radius: 26px;
+  box-shadow: var(--shadow);
+  padding: 32px 28px 28px;
+  max-width: 560px;
+  width: 92vw;
+  text-align: center;
+  overflow: hidden;
+  animation: orSlideUp .45s cubic-bezier(.22,1,.36,1);
+}
+
+@keyframes orSlideUp {
+  from { opacity:0; transform: translateY(48px) scale(.94); }
+  to   { opacity:1; transform: translateY(0) scale(1); }
+}
+
+.or-title {
+  margin: 0 0 22px;
+  font-size: 30px;
+  animation: orPop .5s ease .1s both;
+}
+
+@keyframes orPop {
+  0%  { transform: scale(.7); opacity:0; }
+  70% { transform: scale(1.08); }
+  100%{ transform: scale(1); opacity:1; }
+}
+
+.or-vs-row {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.or-player-card {
+  flex: 1;
+  background: var(--bg);
+  border: 2px solid var(--line);
+  border-radius: 18px;
+  padding: 18px 12px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  box-shadow: var(--shadow-sm);
+  min-width: 120px;
+}
+
+.or-me  { background: var(--mint); transform: rotate(-1deg); }
+.or-opp { background: var(--pink); transform: rotate(1deg); }
+
+.or-player-avatar {
+  font-size: 36px;
+}
+
+.or-player-name {
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+  word-break: break-word;
+}
+
+.or-player-detail {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.or-score-badge {
+  background: var(--yellow);
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  font-size: 12px;
+  padding: 2px 10px;
+  margin-top: 4px;
+}
+
+.or-vs-badge {
+  align-self: center;
+  font-size: 22px;
+  font-weight: bold;
+  background: var(--accent);
+  color: #fff;
+  border: 3px solid var(--line);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+  animation: orPop .5s ease .25s both;
+}
+
+.or-role-tag {
+  display: inline-block;
+  background: var(--blue);
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 18px;
+  font-size: 15px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.or-countdown-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.or-countdown-label {
+  font-size: 16px;
+  color: var(--ink-soft);
+}
+
+.or-countdown {
+  font-size: 46px;
+  font-weight: bold;
+  color: var(--accent);
+  min-width: 52px;
+  display: inline-block;
+  text-align: center;
+  animation: orCountPop .45s ease;
+}
+
+@keyframes orCountPop {
+  0%   { transform: scale(1.5); opacity:0; }
+  60%  { transform: scale(.9); }
+  100% { transform: scale(1); opacity:1; }
+}
+
+.or-confetti-dot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: confettiFall linear forwards;
+  pointer-events: none;
+}
+
+@keyframes confettiFall {
+  from { transform: translateY(-20px) rotate(0deg); opacity:1; }
+  to   { transform: translateY(340px) rotate(720deg); opacity:0; }
+}

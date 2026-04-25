@@ -140,6 +140,12 @@ const DB = {
   getMatch: async (matchId) => {
     const res = await fetch(`${API_BASE}/match?matchId=${matchId}`);
     return res.ok ? await res.json() : null;
+  },
+  getUserInfo: async (id) => {
+    try {
+      const res = await fetch(`${API_BASE}/user-info?id=${id}`);
+      return res.ok ? await res.json() : null;
+    } catch { return null; }
   }
 };
 
@@ -162,6 +168,12 @@ const state = {
   startMatchUnsub: null,
   feed: [],
   leaderboard: [],
+  // Lobby state
+  lobbyTimer: null,
+  lobbyStartTime: null,
+  // Pending match data (stored while showing reveal overlay)
+  pendingMatchData: null,
+  pendingMatchId: null,
   // Music state
   music: {
     tracks: [],
@@ -198,7 +210,7 @@ function matchStatusLabel(s) {
 }
 
 function updateScoreChips() {
-  ["profile-score","task-score","settings-score","feed-score","leaderboard-score"].forEach((id) => {
+  ["profile-score","task-score","settings-score","feed-score","leaderboard-score","lobby-score"].forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.textContent = state.user.score;
   });
@@ -207,14 +219,16 @@ function updateScoreChips() {
 }
 
 function showScreen(name) {
+  // 'task' always goes through the matchmaking lobby flow
+  if (name === "task") { startMatch(); return; }
+
   $$(".screen").forEach((s) => s.classList.remove("active"));
   const target = $(`#screen-${name}`);
   if (target) target.classList.add("active");
 
   if (name === "profile") renderProfile();
   if (name === "settings") syncSettings();
-  if (name === "task") startMatch();
-  if (name === "start") { stopTimer(); cleanupListeners(); refreshStartMatchSummary(); }
+  if (name === "start") { stopTimer(); stopLobby(); cleanupListeners(); refreshStartMatchSummary(); }
   if (name === "feed") renderFeed();
   if (name === "leaderboard") renderLeaderboard();
   updateScoreChips();
@@ -1006,18 +1020,119 @@ async function handleMatchUpdate(m) {
   }
 }
 
-async function startMatch() {
-  if (!auth.currentUser) {
-    pushPopup("System", 0, "please login first");
-    showScreen("start");
-    $("#login-modal").style.display = "flex";
-    return;
+/* ===========================================================
+   LOBBY — PRE-GAME WAITING ROOM
+   =========================================================== */
+function showLobby() {
+  // Switch to lobby screen
+  $$(".screen").forEach(s => s.classList.remove("active"));
+  $("#screen-lobby").classList.add("active");
+  updateScoreChips();
+
+  // Set your name in the pill
+  const lobbyName = $("#lobby-your-name");
+  if (lobbyName) lobbyName.textContent = state.user.name || "You";
+
+  // Start elapsed timer
+  state.lobbyStartTime = Date.now();
+  if (state.lobbyTimer) clearInterval(state.lobbyTimer);
+  state.lobbyTimer = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - state.lobbyStartTime) / 1000);
+    const txt = $("#lobby-time-text");
+    if (txt) txt.textContent = `Searching campus… ${elapsed}s`;
+  }, 1000);
+}
+
+function stopLobby() {
+  if (state.lobbyTimer) { clearInterval(state.lobbyTimer); state.lobbyTimer = null; }
+}
+
+function spawnConfetti() {
+  const container = $("#or-confetti");
+  if (!container) return;
+  container.innerHTML = "";
+  const colors = ["var(--accent)","var(--yellow)","var(--mint)","var(--blue)","var(--peach)"];
+  for (let i = 0; i < 28; i++) {
+    const dot = document.createElement("div");
+    dot.className = "or-confetti-dot";
+    dot.style.left = `${Math.random() * 100}%`;
+    dot.style.background = colors[Math.floor(Math.random() * colors.length)];
+    dot.style.animationDuration = `${0.8 + Math.random() * 1.2}s`;
+    dot.style.animationDelay = `${Math.random() * 0.4}s`;
+    dot.style.width = dot.style.height = `${6 + Math.random() * 8}px`;
+    container.appendChild(dot);
+  }
+}
+
+function startOpponentCountdown(matchData, matchId) {
+  let n = 3;
+  const el = $("#or-countdown");
+  if (el) { el.textContent = n; el.style.animation = "none"; void el.offsetWidth; el.style.animation = ""; }
+
+  const tick = setInterval(() => {
+    n--;
+    if (n <= 0) {
+      clearInterval(tick);
+      // Hide reveal
+      const reveal = $("#opponent-reveal");
+      if (reveal) reveal.style.display = "none";
+      // Go to task screen and set up the match
+      $$(".screen").forEach(s => s.classList.remove("active"));
+      $("#screen-task").classList.add("active");
+      resetTaskUI();
+      setupMatchUI(matchData, matchId);
+      return;
+    }
+    if (el) {
+      el.textContent = n;
+      // Re-trigger animation
+      el.style.animation = "none";
+      void el.offsetWidth;
+      el.style.animation = "";
+    }
+  }, 1000);
+}
+
+async function showOpponentReveal(matchData, matchId) {
+  stopLobby();
+  const uid = auth.currentUser.uid;
+  const oppId = matchData.giverId === uid ? matchData.completerId : matchData.giverId;
+  const role = matchData.giverId === uid ? "Task Giver 📋" : "Completer ✅";
+
+  // Fetch opponent info
+  const opp = await DB.getUserInfo(oppId);
+
+  // Populate MY card
+  $("#or-my-name").textContent  = state.user.name  || "You";
+  $("#or-my-course").textContent = [state.user.course, state.user.department].filter(Boolean).join(" · ") || "—";
+  $("#or-my-score").textContent  = `★ ${state.user.score || 0}`;
+
+  // Populate OPPONENT card
+  if (opp) {
+    $("#or-opp-name").textContent   = opp.name   || "Stranger";
+    $("#or-opp-course").textContent = [opp.course, opp.department].filter(Boolean).join(" · ") || "—";
+    $("#or-opp-score").textContent  = `★ ${opp.score || 0}`;
+  } else {
+    $("#or-opp-name").textContent   = "Mystery Player";
+    $("#or-opp-course").textContent = "campus member";
+    $("#or-opp-score").textContent  = "★ ?";
   }
 
-  cleanupListeners();
-  const uid = auth.currentUser.uid;
+  // Role tag
+  $("#or-role-tag").textContent = `Your role: ${role}`;
 
-  // Reset UI
+  // Show the overlay
+  const reveal = $("#opponent-reveal");
+  reveal.style.display = "flex";
+
+  // Spawn confetti
+  spawnConfetti();
+
+  // Start countdown
+  startOpponentCountdown(matchData, matchId);
+}
+
+function resetTaskUI() {
   state.task = "";
   state.attachment = null;
   state.attachmentMeta = null;
@@ -1032,58 +1147,73 @@ async function startMatch() {
   $("#action-bar").innerHTML = "";
   $("#task-input-row").hidden = true;
   setTimerDisplay("--:--", "idle");
+}
 
-  // If we have an active match, resume it
+async function startMatch() {
+  if (!auth.currentUser) {
+    pushPopup("System", 0, "please login first");
+    showScreen("start");
+    $("#login-modal").style.display = "flex";
+    return;
+  }
+
+  cleanupListeners();
+  const uid = auth.currentUser.uid;
+
+  // If we have an active match, resume it directly (skip lobby)
   if (state.activeMatchId) {
     try {
       const existing = await DB.getMatch(state.activeMatchId);
       if (existing && !["APPROVED","REJECTED","EXPIRED"].includes(existing.status)) {
+        resetTaskUI();
+        // Go straight to task screen for resume
+        $$(".screen").forEach(s => s.classList.remove("active"));
+        $("#screen-task").classList.add("active");
         setupMatchUI(existing, state.activeMatchId);
         return;
       }
     } catch {}
   }
 
+  // Show the lobby while we search
+  showLobby();
+  const statusMsg = $("#lobby-status-msg");
+  if (statusMsg) statusMsg.textContent = "Joining the queue…";
+
   try {
     // Join the matchmaking queue
     await DB.joinMatchQueue(uid);
+    if (statusMsg) statusMsg.textContent = "In queue — looking for a player…";
 
-    // Look for another waiting user
-    const other = await DB.findWaitingUser(uid);
-
-    if (other) {
-      // Found someone! Create match
-      const isGiver = Math.random() < 0.5;
-      const giverId = isGiver ? uid : other.id;
-      const completerId = isGiver ? other.id : uid;
-      const matchId = await DB.createMatch(giverId, completerId);
-
-      // Notify the other user via their queue doc
-      await DB.updateQueueMatched(other.id, matchId);
-      await DB.removeFromQueue(uid);
-
-      const matchData = await DB.getMatch(matchId);
-      setupMatchUI(matchData, matchId);
-    } else {
-      // No one waiting — wait for someone to match us
-      $("#task-text").textContent = "waiting for another player to join…";
-      $("#status-tag").textContent = "in queue…";
-
-      state.queueUnsub = DB.listenQueue(uid, async (queueDoc) => {
-        if (!queueDoc) return; // doc deleted
-        if (queueDoc.status === "matched" && queueDoc.matchId) {
-          // We got matched!
-          if (state.queueUnsub) { state.queueUnsub(); state.queueUnsub = null; }
-          await DB.removeFromQueue(uid);
-          const matchData = await DB.getMatch(queueDoc.matchId);
-          if (matchData) setupMatchUI(matchData, queueDoc.matchId);
+    // Poll for a match via queue listener
+    state.queueUnsub = DB.listenQueue(uid, async (queueDoc) => {
+      if (!queueDoc) return;
+      if (queueDoc.status === "matched" && queueDoc.matchId) {
+        if (state.queueUnsub) { state.queueUnsub(); state.queueUnsub = null; }
+        await DB.removeFromQueue(uid);
+        const matchData = await DB.getMatch(queueDoc.matchId);
+        if (matchData) {
+          // Show the opponent reveal overlay before going to task
+          await showOpponentReveal(matchData, queueDoc.matchId);
         }
-      });
-    }
+      }
+    });
   } catch (err) {
+    stopLobby();
     pushPopup("System", 0, err.message);
+    showScreen("start");
   }
 }
+
+// Cancel lobby buttons
+document.addEventListener("click", (e) => {
+  if (e.target.id === "lobby-cancel-btn" || e.target.id === "lobby-cancel-big-btn") {
+    stopLobby();
+    cleanupListeners();
+    if (auth.currentUser) DB.removeFromQueue(auth.currentUser.uid).catch(() => {});
+    showScreen("start");
+  }
+});
 
 async function doSendTask() {
   const text = $("#task-input").value.trim();

@@ -147,6 +147,49 @@
       </div>
     </section>
 
+    <!-- ============ LOBBY SCREEN ============ -->
+    <section class="screen" id="screen-lobby">
+      <nav class="topbar">
+        <button class="back-btn" id="lobby-cancel-btn">← cancel</button>
+        <h2 class="screen-title">Finding Match</h2>
+        <span class="score-chip">score: <b id="lobby-score">0</b></span>
+      </nav>
+
+      <div class="lobby-wrap">
+        <!-- Doodle Spinner -->
+        <div class="lobby-spinner-wrap">
+          <div class="lobby-spinner">
+            <div class="ls-ring"></div>
+            <div class="ls-ring ls-ring-2"></div>
+            <div class="ls-center">🎮</div>
+          </div>
+          <div class="lobby-dots">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <h3 class="lobby-heading">Finding your match…</h3>
+        <p class="lobby-sub" id="lobby-time-text">Searching campus… 0s</p>
+
+        <!-- Queue status card -->
+        <div class="lobby-status-card">
+          <div class="lobby-status-row">
+            <span class="lobby-status-dot"></span>
+            <span id="lobby-status-msg">Joining the queue…</span>
+          </div>
+          <div class="lobby-player-pill">
+            <span class="lobby-avatar">☻</span>
+            <span id="lobby-your-name">You</span>
+            <span class="lobby-vs-sep">vs</span>
+            <span class="lobby-avatar lobby-avatar-grey">?</span>
+            <span>???</span>
+          </div>
+        </div>
+
+        <button class="doodle-btn lobby-cancel-big" id="lobby-cancel-big-btn">✕ Leave Queue</button>
+      </div>
+    </section>
+
     <!-- ============ TASK SCREEN ============ -->
     <section class="screen" id="screen-task">
       <nav class="topbar">
@@ -349,6 +392,44 @@
     </div>
 
    </main>
+
+   <!-- ============ OPPONENT REVEAL OVERLAY ============ -->
+   <div id="opponent-reveal" style="display:none;">
+     <div class="or-backdrop"></div>
+     <div class="or-card">
+       <div class="or-confetti" id="or-confetti"></div>
+       <h2 class="or-title">⚔️ Match Found!</h2>
+
+       <div class="or-vs-row">
+         <!-- My Card -->
+         <div class="or-player-card or-me">
+           <div class="or-player-avatar">☻</div>
+           <p class="or-player-name" id="or-my-name">You</p>
+           <p class="or-player-detail" id="or-my-course">—</p>
+           <span class="or-score-badge" id="or-my-score">★ 0</span>
+         </div>
+
+         <!-- VS Badge -->
+         <div class="or-vs-badge">VS</div>
+
+         <!-- Opponent Card -->
+         <div class="or-player-card or-opp">
+           <div class="or-player-avatar">☺</div>
+           <p class="or-player-name" id="or-opp-name">Opponent</p>
+           <p class="or-player-detail" id="or-opp-course">—</p>
+           <span class="or-score-badge" id="or-opp-score">★ 0</span>
+         </div>
+       </div>
+
+       <div class="or-role-tag" id="or-role-tag">Your role: —</div>
+
+       <div class="or-countdown-wrap">
+         <span class="or-countdown-label">Starting in</span>
+         <span class="or-countdown" id="or-countdown">3</span>
+       </div>
+     </div>
+   </div>
+
    <!-- Music modal removed: background music is now controlled by the ♪ button -->
    <div id="edit-profile-modal" style="display:none;">
     <div class="modal-box">

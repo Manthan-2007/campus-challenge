@@ -41,13 +41,37 @@ const DB = {
       body: JSON.stringify({matchId, taskText})
     });
   },
-  uploadMediaFile: async (uid, matchId, file, type) => {
-    const fd = new FormData();
-    fd.append("file", file);
-    const r = await fetch(`${API_BASE}/upload`, { method: "POST", body: fd });
-    const { filename } = await r.json();
-    const url = `${API_BASE.replace('/api', '')}/uploads/${filename}`;
-    return { id: url, downloadURL: url };
+  uploadMediaFile: (uid, matchId, file, type, onProgress) => {
+    return new Promise((resolve, reject) => {
+      const fd = new FormData();
+      fd.append("file", file);
+      
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", `${API_BASE}/upload`, true);
+      
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable && onProgress) {
+          const percent = Math.round((e.loaded / e.total) * 100);
+          onProgress(percent);
+        }
+      };
+      
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const res = JSON.parse(xhr.responseText);
+            const filename = res.filename;
+            const url = `${API_BASE.replace('/api', '')}/uploads/${filename}`;
+            resolve({ id: url, downloadURL: url });
+          } catch(err) { reject(err); }
+        } else {
+          reject(new Error("Upload failed with status " + xhr.status));
+        }
+      };
+      
+      xhr.onerror = () => reject(new Error("Network error during upload"));
+      xhr.send(fd);
+    });
   },
   submitProof: async (matchId, uid, type, text) => {
     let proofMediaUrl = null;
@@ -722,20 +746,41 @@ document.addEventListener("change", async (e) => {
     return;
   }
 
-  try {
-      const result = await DB.uploadMediaFile(auth.currentUser.uid, state.matchId, file, type);
-      state.attachment = type;
-      state.attachmentMeta = { type, mediaId: result.id, url: result.downloadURL, name: file.name };
-      $("#cd-label").textContent = file.name;
-      pushPopup("Disc Tray", 0, `${type} uploaded 💿`);
-      $("#cd-disc").className = `cd-disc loaded ${type}`;
-    } catch (err) {
-      pushPopup("Error", 0, "upload failed: " + err.message);
-    } finally {
-      e.target.value = "";
-      state.pendingMediaType = null;
-    }
+  // Max 100MB
+  if (file.size > 100 * 1024 * 1024) {
+    pushPopup("Error", 0, "file too large (max 100MB)");
+    e.target.value = "";
+    return;
   }
+
+  // Show uploading state immediately
+  $("#cd-label").textContent = "uploading... 0%";
+  $("#cd-disc").className = "cd-disc loaded";
+
+  try {
+    const result = await DB.uploadMediaFile(
+      auth.currentUser.uid, 
+      state.matchId, 
+      file, 
+      type,
+      (percent) => {
+        $("#cd-label").textContent = `uploading... ${percent}%`;
+      }
+    );
+    state.attachment = type;
+    state.attachmentMeta = { type, mediaId: result.id, url: result.downloadURL, name: file.name };
+    $("#cd-label").textContent = file.name;
+    $("#cd-disc").className = `cd-disc loaded ${type}`;
+    pushPopup("Disc Tray", 0, `${type} uploaded 💿`);
+  } catch (err) {
+    $("#cd-label").textContent = "upload failed ✕";
+    $("#cd-disc").className = "cd-disc";
+    pushPopup("Error", 0, "upload failed: " + err.message);
+  } finally {
+    e.target.value = "";
+    state.pendingMediaType = null;
+  }
+
 });
 
 /* ===========================================================

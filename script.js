@@ -86,11 +86,11 @@ const DB = {
     const fd = new FormData();
     fd.append("file", file);
     const r = await fetch(`${API_BASE}/upload`, { method: "POST", body: fd });
-    const { filename } = await r.json();
+    const { filename, originalName } = await r.json();
     const url = `${API_BASE.replace('/api', '')}/uploads/${filename}`;
     await fetch(`${API_BASE}/music`, {
       method: "POST", headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({userId: uid, fileName: filename, downloadURL: url})
+      body: JSON.stringify({userId: uid, fileName: originalName || filename, downloadURL: url})
     });
   },
   deleteMusicFile: async (id, storagePath) => {

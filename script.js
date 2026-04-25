@@ -1232,8 +1232,12 @@ async function doSendTask() {
     $("#task-input").value = "";
     $("#task-input-row").hidden = true;
     $("#status-tag").textContent = "task sent! waiting for proof…";
+    $("#task-text").textContent = `📋 Task sent: "${text}"`;
     pushPopup("Match Bot", 0, "task delivered ✉️");
     renderActions([]);
+    // Stop the 3-minute giver timer once task is sent
+    stopTimer();
+    setTimerDisplay("✓ sent", "waiting for proof");
     // Real-time listener handles incoming proof
   } catch (err) { pushPopup("System", 0, err.message); }
 }

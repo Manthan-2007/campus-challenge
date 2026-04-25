@@ -780,7 +780,7 @@ document.addEventListener("change", async (e) => {
     e.target.value = "";
     state.pendingMediaType = null;
   }
-
+  }
 });
 
 /* ===========================================================

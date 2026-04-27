@@ -4,3 +4,4 @@ backend/database.sqlite
 backend/uploads/
 .env
 *.log
+backend/

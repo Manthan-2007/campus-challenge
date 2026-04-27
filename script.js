@@ -172,6 +172,15 @@ const DB = {
       const res = await fetch(`${API_BASE}/user-info?id=${id}`);
       return res.ok ? await res.json() : null;
     } catch { return null; }
+  },
+  // FIX #4 — was missing, caused runtime error when 3-min task timer ran out
+  expireMatch: async (matchId) => {
+    try {
+      await fetch(`${API_BASE}/match/expire`, {
+        method: "POST", headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ matchId })
+      });
+    } catch {}
   }
 };
 
@@ -561,17 +570,13 @@ function seekTrack() {
   state.music.audio.currentTime = percent * state.music.audio.duration;
 }
 
-function formatTime(sec) {
-  if (!sec || isNaN(sec)) return "0:00";
-  const m = Math.floor(sec / 60);
-  const s = Math.floor(sec % 60);
-  return `${m}:${String(s).padStart(2, "0")}`;
-}
+// FIX #5 — duplicate formatTime removed; the timer version below (line ~870) handles both cases
 
 /* ---------- MUSIC EVENT LISTENERS ---------- */
 document.addEventListener("click", (e) => {
-  // Music tile on start screen
-  if (e.target.closest("#music-toggle")) {
+  // FIX #3 — removed openMusicModal() here; bg music toggle handles #music-toggle.
+  // Music library modal is opened from Settings screen via #open-music-library-btn.
+  if (e.target.id === "open-music-library-btn") {
     openMusicModal();
   }
 
@@ -920,7 +925,8 @@ async function refreshStartMatchSummary() {
     if (!m) { block.style.display = "none"; return; }
     block.style.display = "";
     statusEl.textContent = matchStatusLabel(m.status);
-    taskEl.textContent = m.task?.text || "—";
+    // FIX #6 — match stores taskText directly, not task.text
+    taskEl.textContent = m.taskText || "—";
   } catch { block.style.display = "none"; }
 }
 
@@ -1327,9 +1333,10 @@ async function doReview(action) {
     const match = await DB.getMatch(state.matchId);
     if (!match) return;
 
+    // FIX #6 — use taskText and proofType directly from match row
     const result = await DB.reviewMatch(
       state.matchId, action, match.completerId,
-      match.task?.text || "", match.submission?.proofType || "none", true
+      match.taskText || "", match.proofType || "none", true
     );
 
     // Refresh own score

@@ -3,7 +3,10 @@
    Plain HTML / CSS / Vanilla JS + Local Express/SQLite Backend
    =========================================================== */
 
-const API_BASE = "https://manthan-2007-campus-challenge-backend-production.up.railway.app/api";
+const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+const API_BASE = isLocalhost 
+  ? "https://manthan-2007-campus-challenge-backend-production.up.railway.app/api"
+  : "/api";
 
 const auth = {
   get currentUser() {

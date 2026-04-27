@@ -1070,6 +1070,21 @@ async function handleMatchUpdate(m) {
     stopTimer();
     const proofArea = $("#tv-proof-area");
     if (proofArea) proofArea.style.display = "none";
+
+    // If I'm the completer, show me the outcome of the review automatically!
+    if (state.role === "completer" && !$("#screen-result").classList.contains("active")) {
+      const outcome = m.status === "APPROVED" ? "Approved!" : (m.status === "REJECTED" ? "Rejected!" : "Expired");
+      const delta = m.status === "APPROVED" ? 10 : (m.status === "REJECTED" ? -5 : 0);
+      
+      // Update local score before showing result
+      if (state.user && m.status !== "EXPIRED") {
+        state.user.score = Math.max(0, state.user.score + delta);
+        updateScoreChips();
+      }
+      
+      showResult(outcome, delta);
+      setActiveMatchId(null); // Clear active match
+    }
   }
 }
 

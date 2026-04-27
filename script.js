@@ -1408,7 +1408,7 @@ initApp();
    BACKGROUND MUSIC SYSTEM
    Replace BG_MUSIC_URL below with your own music file link!
    =========================================================== */
-const BG_MUSIC_URL = "/bg-music.mp3";
+const BG_MUSIC_URL = "https://docs.google.com/uc?export=download&id=1-7rw6FXobrG1gBsjQHtsj3hTM_8te0te";
 
 const bgMusic = new Audio(BG_MUSIC_URL);
 bgMusic.loop = true;
